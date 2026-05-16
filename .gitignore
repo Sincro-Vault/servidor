@@ -1,16 +1,80 @@
+# ============================================
+#  IGNORAR — datos personales y locales
+# ============================================
+
+# Claude Code (memoria local, settings personales)
+.claude/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Caches y bytecode Python
 __pycache__/
 *.pyc
 *.pyo
-.venv/
-venv/
+*.pyd
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ============================================
+#  IGNORAR — archivos sensibles (NUNCA subir)
+# ============================================
+
+# Variables de entorno (la version .example SI se sube)
 .env
+.env.*
+!.env.example
+
+# Certificados y claves privadas
+certs/
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.csr
+*_private.json
+
+# Tokens y credenciales
+secrets.json
+credentials.json
+*.token
+
+# ============================================
+#  IGNORAR — datos en tiempo de ejecucion
+# ============================================
+
+# Bases de datos SQLite
 *.db
 *.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Blockchain ledger generado en runtime
 data/
-certs/
-.pytest_cache/
-*_pb2.py
-*_pb2_grpc.py
-*.egg-info/
+
+# Logs
+*.log
+logs/
+
+# ============================================
+#  IGNORAR — stubs gRPC generados
+# ============================================
+src/grpc_server/generated/
+
+# ============================================
+#  IGNORAR — IDE / sistema operativo
+# ============================================
 .vscode/
 .idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
