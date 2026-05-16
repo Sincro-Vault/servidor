@@ -87,6 +87,36 @@ Listo. El servidor está corriendo en:
 
 ---
 
+## Docker (opcional — para deploy en AWS / Cloud Run / cualquier servidor)
+
+Si prefieres correrlo en un container en lugar de instalar Python local:
+
+```bash
+# Build + run con docker-compose (mas simple)
+docker compose up -d --build
+
+# Ver logs
+docker compose logs -f server
+
+# Detener
+docker compose down
+
+# Detener y borrar la BD persistente
+docker compose down -v
+```
+
+El servidor queda escuchando en `localhost:9000` (REST) y `localhost:50051` (gRPC).
+Los datos (BD SQLite + blockchain ledger) se persisten en un volumen Docker llamado `server-data`.
+
+**Variables de entorno disponibles** (override con `-e` o en compose):
+- `JWT_SECRET_KEY` — clave de firma JWT (cambiar en produccion)
+- `JWT_EXPIRATION_MINUTES` (default `10`)
+- `DATABASE_URL` (default `sqlite:////app/data/server.db`)
+- `BLOCKCHAIN_DIFFICULTY` (default `2`)
+- `TLS_ENABLED` (default `false`)
+
+**Imagen mas chica:** el Dockerfile usa multi-stage build, la imagen final pesa ~150MB.
+
 ## Tests
 
 ```powershell

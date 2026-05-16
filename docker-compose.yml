@@ -1,0 +1,39 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sincro-vault/servidor:latest
+    container_name: sincro-vault-server
+    restart: unless-stopped
+    ports:
+      - "9000:9000"   # REST API
+      - "50051:50051" # gRPC
+    environment:
+      # JWT (cambiar SecretKey en produccion)
+      JWT_SECRET_KEY: "EstaEsUnaClaveSuperSecretaServidor2026!"
+      JWT_EXPIRATION_MINUTES: "10"
+      # Bind a todas las interfaces dentro del container
+      REST_HOST: "0.0.0.0"
+      REST_PORT: "9000"
+      GRPC_HOST: "0.0.0.0"
+      GRPC_PORT: "50051"
+      # BD y ledger en volumen persistente
+      DATABASE_URL: "sqlite:////app/data/server.db"
+      BLOCKCHAIN_LEDGER_PATH: "/app/data/ledger.json"
+      BLOCKCHAIN_DIFFICULTY: "2"
+      # TLS opcional (montar certs en /app/certs)
+      TLS_ENABLED: "false"
+    volumes:
+      - server-data:/app/data
+      - server-certs:/app/certs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:9000/api/health',timeout=3).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  server-data:
+  server-certs:

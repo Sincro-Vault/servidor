@@ -1,0 +1,56 @@
+# Git / VCS
+.git/
+.gitignore
+.gitattributes
+
+# Claude Code / IDE
+.claude/
+.vscode/
+.idea/
+
+# Entornos virtuales (se reinstalan dentro del container)
+.venv/
+venv/
+env/
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Variables de entorno y secretos (se inyectan via -e o compose)
+.env
+.env.*
+
+# Bases de datos / runtime (van en volumen persistente, no en imagen)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+data/
+certs/
+
+# Logs
+*.log
+logs/
+
+# Stubs gRPC (se generan dentro del container)
+src/grpc_server/generated/
+
+# Tests (no van a runtime)
+tests/
+
+# Documentacion (no afecta runtime)
+README.md
+*.md
+LICENSE
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
