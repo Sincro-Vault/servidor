@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+*.db
+*.db-journal
+data/
+certs/
+.pytest_cache/
+*_pb2.py
+*_pb2_grpc.py
+*.egg-info/
+.vscode/
+.idea/
