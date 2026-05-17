@@ -12,7 +12,12 @@ class Fragment(Base):
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     secret_id = Column(String(64), nullable=False, index=True)
-    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(
+        String(36),
+        ForeignKey("users.id", onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     fragment_index = Column(Integer, nullable=False)
     encrypted_fragment = Column(LargeBinary, nullable=False)
     checksum = Column(String(128), nullable=False)
