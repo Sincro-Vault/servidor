@@ -1,14 +1,16 @@
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: sincro-vault-sqlserver
+    container_name: sincro-vault-server-sqlserver
     restart: unless-stopped
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "SincroVault2026!"
       MSSQL_PID: "Developer"
     ports:
-      - "1433:1433"
+      # 14330 en el host para no chocar con el SQL Server del cliente .NET (1433).
+      # Dentro de la red de compose el server lo sigue alcanzando como sqlserver:1433.
+      - "14330:1433"
     volumes:
       - sqlserver-data:/var/opt/mssql
     healthcheck:
@@ -20,7 +22,7 @@ services:
 
   sqlserver-init:
     image: mcr.microsoft.com/mssql-tools
-    container_name: sincro-vault-sqlserver-init
+    container_name: sincro-vault-server-sqlserver-init
     depends_on:
       sqlserver:
         condition: service_healthy
