@@ -4,8 +4,7 @@ terraform {
   backend "s3" {
     bucket         = "vault-umb-terraform-state"
     key            = "server/terraform.tfstate"
-    region         = "us-east-1"
-    use_lockfile   = true
+    region         = "us-east-2"
     encrypt        = true
   }
   required_providers {

@@ -78,3 +78,5 @@ src/grpc_server/generated/
 *.swo
 .DS_Store
 Thumbs.db
+
+terraform/.terraform
