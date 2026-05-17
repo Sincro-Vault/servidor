@@ -1,4 +1,38 @@
 services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sincro-vault-sqlserver
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "SincroVault2026!"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  sqlserver-init:
+    image: mcr.microsoft.com/mssql-tools
+    container_name: sincro-vault-sqlserver-init
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      MSSQL_SA_PASSWORD: "SincroVault2026!"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P "$$MSSQL_SA_PASSWORD" -Q "IF DB_ID('secretsdb') IS NULL CREATE DATABASE secretsdb;"
+    restart: "no"
+
   server:
     build:
       context: .
@@ -6,6 +40,11 @@ services:
     image: sincro-vault/servidor:latest
     container_name: sincro-vault-server
     restart: unless-stopped
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      sqlserver-init:
+        condition: service_completed_successfully
     ports:
       - "9000:9000"   # REST API
       - "50051:50051" # gRPC
@@ -18,8 +57,8 @@ services:
       REST_PORT: "9000"
       GRPC_HOST: "0.0.0.0"
       GRPC_PORT: "50051"
-      # BD y ledger en volumen persistente
-      DATABASE_URL: "sqlite:////app/data/server.db"
+      # BD = SQL Server (servicio sqlserver del compose)
+      DATABASE_URL: "mssql+pyodbc://sa:SincroVault2026!@sqlserver:1433/secretsdb?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
       BLOCKCHAIN_LEDGER_PATH: "/app/data/ledger.json"
       BLOCKCHAIN_DIFFICULTY: "2"
       # TLS opcional (montar certs en /app/certs)
@@ -32,8 +71,9 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 30s
 
 volumes:
   server-data:
   server-certs:
+  sqlserver-data:

@@ -7,9 +7,10 @@
 # ----------- Stage 1: builder ------------------------
 FROM python:3.11-slim AS builder
 
-# Dependencias del SO para compilar wheels (cryptography, etc.)
+# Dependencias del SO para compilar wheels (cryptography, pyodbc, etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    unixodbc-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
@@ -22,9 +23,10 @@ RUN pip install --no-cache-dir --user --upgrade pip \
 # Generar stubs gRPC desde el .proto
 COPY proto/ ./proto/
 COPY scripts/generate_grpc.py ./scripts/
+ENV PATH=/root/.local/bin:$PATH
 RUN mkdir -p src/grpc_server/generated \
  && touch src/grpc_server/generated/__init__.py \
- && /root/.local/bin/python -m grpc_tools.protoc \
+ && python -m grpc_tools.protoc \
     -Iproto \
     --python_out=src/grpc_server/generated \
     --grpc_python_out=src/grpc_server/generated \
@@ -33,6 +35,18 @@ RUN mkdir -p src/grpc_server/generated \
 
 # ----------- Stage 2: runtime ------------------------
 FROM python:3.11-slim
+
+# Instalar ODBC Driver 18 para SQL Server + runtime de unixodbc
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl gnupg ca-certificates apt-transport-https unixodbc \
+ && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
+ && echo "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" \
+        > /etc/apt/sources.list.d/mssql-release.list \
+ && apt-get update \
+ && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 \
+ && apt-get purge -y curl gnupg apt-transport-https \
+ && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/*
 
 # Crear usuario no-root para mejor seguridad
 RUN useradd --create-home --shell /bin/bash secretsserver
@@ -66,7 +80,7 @@ ENV REST_HOST=0.0.0.0 \
     REST_PORT=9000 \
     GRPC_HOST=0.0.0.0 \
     GRPC_PORT=50051 \
-    DATABASE_URL=sqlite:////app/data/server.db \
+    DATABASE_URL="mssql+pyodbc://sa:SincroVault2026!@sqlserver:1433/secretsdb?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes" \
     BLOCKCHAIN_LEDGER_PATH=/app/data/ledger.json
 
 CMD ["python", "-m", "src.main"]

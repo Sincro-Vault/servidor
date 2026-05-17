@@ -10,8 +10,11 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expiration_minutes: int = 10
 
-    # Database
-    database_url: str = "sqlite:///./server.db"
+    # Database (SQL Server por defecto; sobreescribir via DATABASE_URL en .env / docker-compose)
+    database_url: str = (
+        "mssql+pyodbc://sa:SincroVault2026!@localhost:1433/secretsdb"
+        "?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
+    )
 
     # Server
     rest_host: str = "0.0.0.0"

@@ -10,9 +10,9 @@ from src.database import Base
 class Fragment(Base):
     __tablename__ = "fragments"
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    secret_id = Column(String, nullable=False, index=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    secret_id = Column(String(64), nullable=False, index=True)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False, index=True)
     fragment_index = Column(Integer, nullable=False)
     encrypted_fragment = Column(LargeBinary, nullable=False)
     checksum = Column(String(128), nullable=False)
